@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-#what is the target?
 import tensorflow as tf
 import numpy as np
 import os
@@ -14,8 +13,28 @@ from tensorflow.contrib import learn
 
 # Data loading paramsw
 tf.flags.DEFINE_float("dev_sample_percentage", .1, "Percentage of the training data to use for validation")
+'''
+def DEFINE_float(flag_name, default_value, docstring):
+Defines a flag of type 'float'.
+  Args:
+    flag_name: The name of the flag as a string.
+    default_value: The default value the flag should take as a float.
+    docstring: A helpful message explaining the use of the flag.
+'''
+
+
 tf.flags.DEFINE_string("positive_data_file", "./data/rt-polaritydata/rt-polarity.pos", "Data source for the positive data.")
 tf.flags.DEFINE_string("negative_data_file", "./data/rt-polaritydata/rt-polarity.neg", "Data source for the negative data.")
+
+'''
+def DEFINE_string(flag_name, default_value, docstring):
+  Defines a flag of type 'string'.
+  Args:
+    flag_name: The name of the flag as a string.
+    default_value: The default value the flag should take as a string.
+    docstring: A helpful message explaining the use of the flag.
+'''
+
 
 # Model Hyperparameters
 tf.flags.DEFINE_integer("embedding_dim", 128, "Dimensionality of character embedding (default: 128)")
@@ -24,6 +43,15 @@ tf.flags.DEFINE_integer("num_filters", 128, "Number of filters per filter size (
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularization lambda (default: 0.0)")
 
+'''
+def DEFINE_integer(flag_name, default_value, docstring):
+  Defines a flag of type 'int'.
+  Args:
+    flag_name: The name of the flag as a string.
+    default_value: The default value the flag should take as an int.
+    docstring: A helpful message explaining the use of the flag.
+
+'''
 # Training parameters
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_integer("num_epochs", 200, "Number of training epochs (default: 200)")
