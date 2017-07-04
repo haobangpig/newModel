@@ -12,20 +12,39 @@ class TextCNN(object):
       embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
 
         # Placeholders for input, output and dropout
+        #input_y Means output layer
         self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
-        self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
-        self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
+        #placeholder to create the graph to set the sequence_length as the input which should be like 59(the maximum words in the dataset.)
 
+        self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
+        #placeholder to create the graph to set the num_classes which should be like 2 
+
+        self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
+        #probability of keeping a neuron in the dropout layer
+        '''
+        tf.placeholder creates a placeholder variable that we feed to the network when we execute it at train or test time.
+        '''
         # Keeping track of l2 regularization loss (optional)
         l2_loss = tf.constant(0.0)
 
         # Embedding layer
+        #first layer is the Embedding layer, which maps vocabulary word indices into low-dimensional vector representations.
         with tf.device('/cpu:0'), tf.name_scope("embedding"):
+            #tf.device("/cpu:0") forces an operation to be executed on the CPU.
+            #tf.name_scope creates a new Name Scope with the name “embedding”. 
             self.W = tf.Variable(
                 tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0),
                 name="W")
+            #tf.random_uniform(shape,minval=0,maxval=None,dtype=tf.float32,seed=None,name=None):用于生成随机数tensor的，均匀分布随机数，min到max
+
+            #W is our embedding matrix that we learn during training. We initialize it using a random uniform distribution. 
             self.embedded_chars = tf.nn.embedding_lookup(self.W, self.input_x)
             self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
+
+
+
+
+
 
         # Create a convolution + maxpool layer for each filter size
         pooled_outputs = []
