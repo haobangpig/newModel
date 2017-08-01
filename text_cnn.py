@@ -6,10 +6,21 @@ class TextCNN(object):
     """
     A CNN for text classification.
     Uses an embedding layer, followed by a convolutional, max-pooling and softmax layer.
+    为了接收各种参数我们把结构放入textCNN类中，生成model graph在init函数
     """
     def __init__(
       self, sequence_length, num_classes, vocab_size,
       embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
+
+    '''
+        sequence_length – The length of our sentences.我们将填充我们的句子去拥有相同的长度（59） 
+        num_classes – Number of classes in the output layer, two in our case (positive and negative).
+        vocab_size – The size of our vocabulary. This is needed to define the size of our embedding layer, 
+        which will have shape [vocabulary_size, embedding_size].
+        embedding_size – The dimensionality of our embeddings.
+        filter_sizes – The number of words we want our convolutional filters to cover. 
+        num_filters – The number of filters per filter size
+    '''
 
         # Placeholders for input, output and dropout
         #input_y Means output layer
