@@ -21,7 +21,7 @@ class TextCNN(object):
         filter_sizes – The number of words we want our convolutional filters to cover. 
         num_filters – The number of filters per filter size
     '''
-
+        #这里介绍了三个placeholder占位符，
         # Placeholders for input, output and dropout
         #input_y Means output layer
         self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
@@ -40,24 +40,31 @@ class TextCNN(object):
 
         # Embedding layer
         #first layer is the Embedding layer, which maps vocabulary word indices into low-dimensional vector representations.
+        #第一次结构，将单词转换为低纬的向量表示。
         with tf.device('/cpu:0'), tf.name_scope("embedding"):
             #tf.device("/cpu:0") forces an operation to be executed on the CPU.
-            #tf.name_scope creates a new Name Scope with the name “embedding”. 
+            #tf.name_scope creates a new Name Scope with the name “embedding”.
+            #W is our embedding matrix that we learn during training.
+            # We initialize it using a random uniform distribution.  
             self.W = tf.Variable(
                 tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0),
                 name="W")
             #tf.random_uniform(shape,minval=0,maxval=None,dtype=tf.float32,seed=None,name=None):用于生成随机数tensor的，均匀分布随机数，min到max
 
-            #W is our embedding matrix that we learn during training. We initialize it using a random uniform distribution. 
+            # tf.nn.embedding_lookup 创造实际的嵌入式操作，其结果是3维的张量， [None, sequence_length, embedding_size]
             self.embedded_chars = tf.nn.embedding_lookup(self.W, self.input_x)
+            #因为在我们的conv2d中，需要的是4维的tensor，所以在这里我们需要一个expand维度的操作， 
+            #在最后加一个维度是in_channel，但是，我们的embedding没有channal，所以1就好
             self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
 
 
 
 
 
-
+        #现在来创建我们的convolution layers，我们使用不同size的filter，卷积将会创造出不同的tensor，
+        #我们需要iterate它们，然后创造一个layer，然后将它们合并成一个大的特征向量
         # Create a convolution + maxpool layer for each filter size
+        
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
             with tf.name_scope("conv-maxpool-%s" % filter_size):
