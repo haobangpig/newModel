@@ -8,7 +8,9 @@ class TextCNN(object):
     Uses an embedding layer, followed by a convolutional, max-pooling and softmax layer.
     为了接收各种参数我们把结构放入textCNN类中，生成model graph在init函数
     """
-    def __init__(self, sequence_length, num_classes, vocab_size,embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
+    def __init__(
+        self, sequence_length, num_classes, vocab_size,
+        embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
 
         """
         sequence_length – The length of our sentences.我们将填充我们的句子去拥有相同的长度（59） 
@@ -18,6 +20,7 @@ class TextCNN(object):
         embedding_size – The dimensionality of our embeddings.
         filter_sizes – The number of words we want our convolutional filters to cover. 
         num_filters – The number of filters per filter size
+
         """
 
         #这里介绍了三个placeholder占位符，
@@ -87,21 +90,66 @@ class TextCNN(object):
                     padding='VALID',
                     name="pool")
                 pooled_outputs.append(pooled)
-
+                print (pooled_outputs)
         # Combine all the pooled features
         num_filters_total = num_filters * len(filter_sizes)
         self.h_pool = tf.concat(pooled_outputs, 3)
+        self.h_pool_flat = tf.reshape(pooled_outputs, [-1,1,1,1])        
+
+        pooled_outputs2 = []
+        for i, filter_size in enumerate(filter_sizes):
+            with tf.name_scope("conv-maxpool-%s" % filter_size):
+                # Convolution Layer
+                filter_shape = [filter_size, 1, 128, 1]
+                W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
+                b = tf.Variable(tf.constant(0.1, shape=[num_filters]), name="b")
+                conv = tf.nn.conv2d(
+                    pooled, #[None, sequence_length, embedding_size, 1]
+                    W, 
+                    strides=[1, 1, 1, 1],
+                    padding="VALID",
+                    name="conv")
+
+
+                '''
+                tf.nn.conv2d:
+                这个函数的功能是：给定4维的iput和filter，计算出一个2维的卷积结果：
+                def conv2d(input, filter, strides, padding, use_cudnn_ongpu=None, data_format=None, name=None):
+                    input：待卷积的数据。格式要求为一个张量，[batch, in_height, in_width, in_channels]. 
+                    分别表示 批次数，图像高度，宽度，输入通道数。 
+                    filter： 卷积核。格式要求为[filter_height, filter_width, in_channels, out_channels]. 
+                    分别表示 卷积核的高度，宽度，输入通道数，输出通道数。 
+                    strides :一个长为4的list. 表示每次卷积以后卷积窗口在input中滑动的距离 
+                    padding ：有SAME和VALID两种选项，表示是否要保留图像边上那一圈不完全卷积的部分。如果是SAME，则保留 
+                    use_cudnn_on_gpu ：是否使用cudnn加速。默认是True
+                '''
+                # Apply nonlinearity
+                h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
+                # Maxpooling over the outputs
+                pooled = tf.nn.max_pool(
+                    h,
+                    ksize=[1, sequence_length - filter_size + 1, 1, 1],
+                    strides=[1, 1, 1, 1],
+                    padding='VALID',
+                    name="pool")
+                '''
+                tf.nn.max_pool :
+
+                进行最大值池化操作,而avg_pool 则进行平均值池化操作.函数的定义为：
+
+                def max_pool(value, ksize, strides, padding, data_format="NHWC", name=None):
+
+                value: 一个4D张量，格式为[batch, height, width, channels]，与conv2d中input格式一样 
+                ksize: 长为4的list,表示池化窗口的尺寸 
+                strides: 池化窗口的滑动值，与conv2d中的一样 
+                padding: 与conv2d中用法一样。
+                '''
+                pooled_outputs2.append(pooled)
+
+        # Combine all the pooled features
+        num_filters_total = num_filters * len(filter_sizes)
+        self.h_pool = tf.concat(pooled_outputs2, 3)
         self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
-
-
-
-
-
-
-
-
-
-
 
         # Add dropout
         with tf.name_scope("dropout"):
